@@ -4,27 +4,34 @@ from io import BytesIO
 import random
 
 st.set_page_config(page_title="Auditor SEO PRO Muebles", layout="wide")
-st.title("🚀 Auditor SEO PRO Muebles (Nivel Humano Real)")
+st.title("🚀 Auditor SEO PRO Muebles (Copywriter Automático REAL)")
 
 file = st.file_uploader("Sube tu archivo", type=["xlsx", "csv"])
 MIN_IMAGES = 4
 
+# 🧠 MEMORIA GLOBAL (evita repetición)
+frases_usadas = set()
+
+def elegir_unico(lista):
+    opciones = [x for x in lista if x not in frases_usadas]
+    if not opciones:
+        frases_usadas.clear()
+        opciones = lista
+    elegido = random.choice(opciones)
+    frases_usadas.add(elegido)
+    return elegido
+
 # 🧠 CATEGORÍAS
 def detectar_categoria(title):
     t = title.lower()
-
     if "comedor" in t or "set" in t:
         return "comedor"
     elif "silla" in t:
         return "silla"
     elif "escritorio" in t:
         return "escritorio"
-    elif "mesa" in t:
-        return "mesa"
     elif "sofa" in t or "sofá" in t:
         return "sofa"
-    elif "sillon" in t or "sillón" in t:
-        return "sillon"
     return "general"
 
 # 🧠 MATERIALES
@@ -43,7 +50,7 @@ def detectar_materiales(title):
 
     return mats
 
-# 🧠 ATRIBUTOS DINÁMICOS
+# 🧠 ATRIBUTOS
 def detectar_atributos(title):
     t = title.lower()
     atributos = []
@@ -52,61 +59,108 @@ def detectar_atributos(title):
         atributos.append("incluye 4 piezas")
     if "6" in t:
         atributos.append("incluye 6 piezas")
-
     if "rectangular" in t:
         atributos.append("mesa rectangular")
     if "circular" in t:
         atributos.append("mesa circular")
-
     if "negro" in t:
         atributos.append("acabado en color negro")
     if "blanco" in t:
         atributos.append("acabado en color blanco")
 
-    if "oslo" in t:
-        atributos.append("diseño moderno estilo Oslo")
-
     return atributos
 
 # 🧠 BULLETS
 def generar_bullets(cat, materiales, atributos):
-    base = []
-
-    if cat == "comedor":
-        base = [
+    base = {
+        "comedor": [
             "Ideal para reuniones familiares",
             "Diseño moderno y funcional",
             "Optimiza tu espacio"
-        ]
-    elif cat == "silla":
-        base = [
-            "Comodidad durante largas jornadas",
+        ],
+        "silla": [
+            "Comodidad prolongada",
             "Diseño ergonómico",
-            "Versátil para hogar u oficina"
-        ]
-    else:
-        base = [
+            "Uso versátil"
+        ],
+        "general": [
             "Alta calidad",
             "Diseño funcional",
             "Uso versátil"
         ]
+    }
 
-    return base + materiales + atributos
+    bullets = base.get(cat, base["general"]) + materiales + atributos
+    random.shuffle(bullets)
+    return bullets[:6]
 
-# 🧠 VARIACIÓN HUMANA
-introducciones = [
-    "Transforma tu espacio con este increíble",
+# 🧠 FRASES HUMANAS
+intros = [
+    "Transforma tu espacio con este",
     "Dale un toque moderno a tu hogar con este",
-    "Renueva tu ambiente con este funcional",
-    "Haz de tu espacio un lugar más cómodo con este"
+    "Renueva tu ambiente con este",
+    "Haz de tu espacio un lugar más funcional con este"
+]
+
+desarrollos = [
+    "Diseñado para adaptarse a diferentes espacios, combinando estética y funcionalidad.",
+    "Pensado para brindar comodidad y estilo en el día a día.",
+    "Una opción práctica que se integra fácilmente en distintos ambientes.",
+    "Ideal para quienes buscan equilibrio entre diseño y utilidad."
 ]
 
 cierres = [
-    "Perfecto para complementar tu hogar con estilo y funcionalidad.",
-    "Una excelente opción para quienes buscan diseño y practicidad.",
-    "Ideal para crear espacios cómodos y bien aprovechados.",
-    "Diseñado para adaptarse a diferentes necesidades del día a día."
+    "Perfecto para complementar tu hogar.",
+    "Una excelente elección para tu espacio.",
+    "Ideal para uso diario con estilo.",
+    "Gran opción para mejorar tu ambiente."
 ]
+
+# 🧠 GENERADOR PRO
+def generar_desc(title, market, cat, materiales):
+    atributos = detectar_atributos(title)
+    bullets = generar_bullets(cat, materiales, atributos)
+
+    intro = elegir_unico(intros)
+    desarrollo = elegir_unico(desarrollos)
+    cierre = elegir_unico(cierres)
+
+    bullets_txt = "\n".join([f"✔️ {b}" for b in bullets])
+
+    estructura = random.choice([1,2,3])
+
+    if estructura == 1:
+        return f"""🔹 {title}
+
+{intro} {cat} {', '.join(atributos[:2])}.
+
+{desarrollo}
+
+{bullets_txt}
+
+{cierre}"""
+
+    elif estructura == 2:
+        return f"""🔹 {title}
+
+{desarrollo}
+
+{intro} {cat} ideal para tu espacio.
+
+{bullets_txt}
+
+{cierre}"""
+
+    else:
+        return f"""🔹 {title}
+
+{intro} {cat} pensado para tu hogar.
+
+{bullets_txt}
+
+{desarrollo}
+
+{cierre}"""
 
 # 🧠 TÍTULO SEO
 def optimizar_titulo(title, market, cat):
@@ -120,36 +174,6 @@ def optimizar_titulo(title, market, cat):
         return f"{title} mueble hogar calidad precio"[:120]
 
     return title[:120]
-
-# 🧠 DESCRIPCIÓN HUMANA PRO
-def generar_desc(title, market, cat, materiales):
-    atributos = detectar_atributos(title)
-    bullets = generar_bullets(cat, materiales, atributos)
-
-    intro_random = random.choice(introducciones)
-    cierre_random = random.choice(cierres)
-
-    bullets_txt = "\n".join([f"✔️ {b}" for b in bullets])
-
-    intro = f"{intro_random} {cat} {', '.join(atributos[:2])}." if atributos else f"{intro_random} {cat} ideal para tu espacio."
-
-    parrafo_extra = ""
-    if cat == "comedor":
-        parrafo_extra = "Este set de comedor está pensado para brindar comodidad y estilo en reuniones familiares o momentos cotidianos, adaptándose fácilmente a diferentes espacios del hogar."
-    elif cat == "silla":
-        parrafo_extra = "Su diseño está enfocado en brindar confort durante el uso continuo, manteniendo una estética moderna y funcional."
-    else:
-        parrafo_extra = "Diseñado para ofrecer funcionalidad sin sacrificar el estilo, adaptándose a distintos entornos."
-
-    return f"""🔹 {title}
-
-{intro}
-
-{parrafo_extra}
-
-{bullets_txt}
-
-{cierre_random}"""
 
 # 🎨 EXPORTAR
 def exportar_excel(df):
@@ -167,36 +191,6 @@ if file:
 
     df.fillna("", inplace=True)
 
-    resultados = []
-
-    for _, row in df.iterrows():
-        title = str(row.get("title", ""))
-        desc = str(row.get("description", ""))
-        images = str(row.get("images", "")).split(",")
-
-        score = 100
-
-        if len(title) < 50:
-            score -= 25
-        if len(images) < MIN_IMAGES:
-            score -= 20
-        if len(desc) < 120:
-            score -= 25
-
-        prioridad = "🟢 Bien"
-        if score < 80:
-            prioridad = "🟠 Mejorar"
-        if score < 50:
-            prioridad = "🔴 Urgente"
-
-        resultados.append({
-            "Producto": title,
-            "Score SEO": score,
-            "Prioridad": prioridad
-        })
-
-    st.dataframe(pd.DataFrame(resultados), use_container_width=True)
-
     if st.button("🚀 Arreglar TODO PRO"):
         nuevos = []
 
@@ -208,7 +202,7 @@ if file:
             materiales = detectar_materiales(title)
 
             nuevo_titulo = optimizar_titulo(title, market, cat)
-            nueva_desc = generar_desc(nuevo_titulo, market, cat, materiales)
+            nueva_desc = generar_desc(title, market, cat, materiales)
 
             nuevos.append({
                 "Título Nuevo": nuevo_titulo,
