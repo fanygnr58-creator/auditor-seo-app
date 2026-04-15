@@ -2,125 +2,158 @@ import pandas as pd
 import streamlit as st
 from io import BytesIO
 
-st.set_page_config(page_title="Auditor SEO PRO", layout="wide")
-
-st.title("🚀 Auditor SEO Inteligente PRO (IA GRATIS)")
+st.set_page_config(page_title="Auditor SEO PRO Muebles", layout="wide")
+st.title("🚀 Auditor SEO PRO Muebles (Nivel Empresa)")
 
 file = st.file_uploader("Sube tu archivo", type=["xlsx", "csv"])
-
 MIN_IMAGES = 4
 
-# 🧠 Detectar categoría
+# 🧠 CATEGORIZACIÓN COMPLETA MUEBLES
 def detectar_categoria(title):
     t = title.lower()
-    if "silla" in t:
+
+    if "comedor" in t or "set" in t:
+        return "comedor"
+    elif "silla" in t:
         return "silla"
     elif "escritorio" in t:
         return "escritorio"
     elif "mesa" in t:
         return "mesa"
+    elif "sofa" in t or "sofá" in t:
+        return "sofa"
+    elif "sillon" in t or "sillón" in t:
+        return "sillon"
+    elif "banco" in t or "banca" in t:
+        return "banca"
+    elif "archivero" in t:
+        return "archivero"
+    elif "librero" in t or "estante" in t:
+        return "librero"
+    elif "closet" in t or "ropero" in t:
+        return "closet"
+    elif "cama" in t:
+        return "cama"
+    elif "buró" in t or "buro" in t:
+        return "buro"
+    elif "tocador" in t:
+        return "tocador"
+    
     return "general"
 
-# 🧠 Reglas marketplace
-def reglas(market):
-    m = str(market).lower()
+# 🧠 DETECTAR MATERIALES
+def detectar_materiales(title):
+    t = title.lower()
+    mats = []
+
+    if "madera" in t or "melamina" in t:
+        mats.append("estructura en madera/melamina")
+    if "metal" in t or "acero" in t:
+        mats.append("estructura metálica resistente")
+    if "plastico" in t or "plástico" in t:
+        mats.append("material plástico duradero")
+    if "tela" in t:
+        mats.append("tapizado en tela")
+    if "piel" in t or "vinil" in t:
+        mats.append("acabado tipo piel")
+
+    return mats
+
+# 🧠 BULLETS DINÁMICOS
+def generar_bullets(cat, materiales):
+    base = []
+
+    if cat == "silla":
+        base = ["Diseño ergonómico", "Comodidad prolongada", "Ideal para oficina"]
+    elif cat == "comedor":
+        base = ["Ideal para reuniones", "Diseño moderno", "Ahorro de espacio"]
+    elif cat == "sofa":
+        base = ["Máximo confort", "Diseño elegante", "Ideal para sala"]
+    elif cat == "escritorio":
+        base = ["Espacio funcional", "Ideal para trabajo", "Diseño moderno"]
+    else:
+        base = ["Alta calidad", "Diseño funcional", "Uso versátil"]
+
+    return base + materiales
+
+# 🧠 SEO POR MARKETPLACE
+def optimizar_titulo(title, market, cat):
+    m = market.lower()
+
     if "amazon" in m:
-        return ["ergonómico", "oficina", "ajustable", "resistente"]
+        return f"{title} {cat} moderno resistente hogar oficina"[:120]
+
     if "mercado" in m:
-        return ["nuevo", "garantía", "envío gratis"]
+        return f"{title} nuevo envío gratis garantía"[:120]
+
     if "walmart" in m:
-        return ["calidad", "oferta", "hogar"]
-    return ["premium", "original"]
+        return f"{title} mueble hogar calidad precio"[:120]
 
-# ✨ Optimizar título
-def optimizar_titulo(title, market):
-    cat = detectar_categoria(title)
-    kws = reglas(market)
+    if "liverpool" in m:
+        return f"{title} diseño premium hogar moderno"[:120]
 
-    nuevo = title.strip()
+    if "coppel" in m:
+        return f"{title} práctico económico hogar"[:120]
 
-    for kw in kws:
-        if kw not in nuevo.lower():
-            nuevo += f" {kw}"
+    if "elektra" in m:
+        return f"{title} oferta especial mueble hogar"[:120]
 
-    if cat == "silla":
-        nuevo += " ergonómica cómoda oficina"
-    if cat == "escritorio":
-        nuevo += " moderno funcional"
+    if "shopify" in m:
+        return f"{title} tienda oficial diseño exclusivo"[:120]
 
-    return nuevo[:120]
+    return title[:120]
 
-# ✨ Descripción inteligente
-def generar_desc(title):
-    cat = detectar_categoria(title)
+# 🧠 DESCRIPCIONES PRO
+def generar_desc(title, market, cat, materiales, bullets):
+    m = market.lower()
 
-    if cat == "silla":
+    bullets_txt = "\n".join([f"✔️ {b}" for b in bullets])
+
+    if "amazon" in m:
         return f"""🔹 {title}
 
-🪑 Diseño ergonómico para máxima comodidad
-🛠️ Material resistente y duradero
-📏 Ideal para oficina o home office
+Producto diseñado para ofrecer funcionalidad y estilo en cualquier espacio.
 
-✔️ Ajuste de altura
-✔️ Soporte lumbar
-✔️ Estilo moderno
+{bullets_txt}
 
-🚚 Envío rápido y seguro"""
+Perfecto para hogar u oficina."""
 
-    if cat == "escritorio":
+    if "mercado" in m:
         return f"""🔹 {title}
 
-🖥️ Espacio ideal para trabajar o estudiar
-🛠️ Estructura firme y resistente
-📏 Diseño moderno y funcional
+Producto nuevo listo para envío inmediato 🚀
 
-✔️ Fácil armado
-✔️ Excelente estabilidad
-✔️ Amplia superficie
+{bullets_txt}
 
-🚚 Entrega segura"""
+📦 Envío rápido\n🔒 Garantía incluida"""
+
+    if "walmart" in m:
+        return f"""🔹 {title}
+
+Renueva tu espacio con este mueble funcional.
+
+{bullets_txt}
+
+Gran opción para tu hogar."""
+
+    if "liverpool" in m:
+        return f"""🔹 {title}
+
+Diseño elegante que complementa cualquier ambiente.
+
+{bullets_txt}
+
+Ideal para espacios modernos."""
 
     return f"""🔹 {title}
 
-✔️ Alta calidad
-✔️ Diseño funcional
-✔️ Uso versátil
+{bullets_txt}"""
 
-🚚 Envío rápido"""
-
-# 🎨 Exportar Excel bonito
+# 🎨 EXPORTAR
 def exportar_excel(df):
     output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
         df.to_excel(writer, index=False)
-
-        workbook = writer.book
-        worksheet = writer.sheets["Sheet1"]
-
-        format_red = workbook.add_format({"bg_color": "#FFC7CE"})
-        format_yellow = workbook.add_format({"bg_color": "#FFEB9C"})
-        format_green = workbook.add_format({"bg_color": "#C6EFCE"})
-
-        worksheet.conditional_format("C2:C1000", {
-            "type": "cell",
-            "criteria": "<",
-            "value": 50,
-            "format": format_red
-        })
-        worksheet.conditional_format("C2:C1000", {
-            "type": "cell",
-            "criteria": "between",
-            "minimum": 50,
-            "maximum": 80,
-            "format": format_yellow
-        })
-        worksheet.conditional_format("C2:C1000", {
-            "type": "cell",
-            "criteria": ">",
-            "value": 80,
-            "format": format_green
-        })
-
     return output.getvalue()
 
 # 🚀 PROCESO
@@ -131,8 +164,6 @@ if file:
         df = pd.read_excel(file)
 
     df.fillna("", inplace=True)
-
-    st.success("Archivo cargado ✅")
 
     resultados = []
 
@@ -163,29 +194,28 @@ if file:
             "Prioridad": prioridad
         })
 
-    view_df = pd.DataFrame(resultados)
-    st.dataframe(view_df, use_container_width=True)
+    st.dataframe(pd.DataFrame(resultados), use_container_width=True)
 
-    # 🚀 BOTÓN PRO
-    if st.button("🚀 Arreglar TODO (IA GRATIS)"):
+    if st.button("🚀 Arreglar TODO PRO"):
         nuevos = []
 
         for _, row in df.iterrows():
             title = str(row.get("title", ""))
             market = str(row.get("marketplace", ""))
 
-            nuevo_titulo = optimizar_titulo(title, market)
-            nueva_desc = generar_desc(nuevo_titulo)
+            cat = detectar_categoria(title)
+            materiales = detectar_materiales(title)
+            bullets = generar_bullets(cat, materiales)
+
+            nuevo_titulo = optimizar_titulo(title, market, cat)
+            nueva_desc = generar_desc(nuevo_titulo, market, cat, materiales, bullets)
 
             nuevos.append({
                 "Título Nuevo": nuevo_titulo,
                 "Descripción Nueva": nueva_desc
             })
 
-        nuevos_df = pd.DataFrame(nuevos)
-        final_df = pd.concat([df, nuevos_df], axis=1)
-
-        st.success("🔥 Optimización completa")
+        final_df = pd.concat([df, pd.DataFrame(nuevos)], axis=1)
 
         st.dataframe(final_df, use_container_width=True)
 
