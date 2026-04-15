@@ -1,375 +1,196 @@
-import io
-import re
 import pandas as pd
 import streamlit as st
+from io import BytesIO
 
-# =========================
-# ⚙️ CONFIG APP
-# =========================
-st.set_page_config(page_title="Auditoría Inteligente PRO (Web)", layout="wide")
-st.title("🧠 Auditoría Inteligente de Listings (IA GRATIS - Web)")
+st.set_page_config(page_title="Auditor SEO PRO", layout="wide")
 
-st.caption("Audita, optimiza y exporta listings para Amazon, Mercado Libre y Walmart — sin API.")
+st.title("🚀 Auditor SEO Inteligente PRO (IA GRATIS)")
 
-# =========================
-# 🔧 CONFIG GLOBAL
-# =========================
-KEYWORDS_DEFAULT = ["original", "nuevo", "oficial", "garantía", "envío gratis", "premium"]
+file = st.file_uploader("Sube tu archivo", type=["xlsx", "csv"])
+
 MIN_IMAGES = 4
-MIN_DESC_LENGTH = 120
 
-# =========================
-# 🧠 REGLAS POR MARKETPLACE
-# =========================
-def reglas_marketplace(marketplace: str):
-    m = str(marketplace).lower()
-    if "amazon" in m:
-        return {"min_title": 80, "keywords": ["ergonómico", "oficina", "resistente", "ajustable"]}
-    elif "mercado" in m:
-        return {"min_title": 60, "keywords": ["nuevo", "garantía", "envío gratis"]}
-    elif "walmart" in m:
-        return {"min_title": 50, "keywords": ["calidad", "hogar", "oferta"]}
-    else:
-        return {"min_title": 40, "keywords": KEYWORDS_DEFAULT}
-
-# =========================
-# 🧹 UTILIDADES
-# =========================
-def limpiar_texto(t: str):
-    t = str(t).replace("\n", " ").strip()
-    t = re.sub(r"\s+", " ", t)
-    return t
-
-# =========================
-# 🧠 DETECCIÓN DE CATEGORÍA (MEJORADA)
-# =========================
-def detectar_categoria(title: str):
+# 🧠 Detectar categoría
+def detectar_categoria(title):
     t = title.lower()
-    reglas = {
-        "silla": ["silla", "butaca", "banco"],
-        "escritorio": ["escritorio", "desk", "mesa de trabajo"],
-        "mesa": ["mesa", "comedor", "table"],
-        "sofa": ["sofá", "sofa", "sillón"],
-        "archivero": ["archivero", "cajonera", "archivo"],
-    }
-    for cat, kws in reglas.items():
-        if any(k in t for k in kws):
-            return cat
+    if "silla" in t:
+        return "silla"
+    elif "escritorio" in t:
+        return "escritorio"
+    elif "mesa" in t:
+        return "mesa"
     return "general"
 
-# =========================
-# ✏️ OPTIMIZADOR DE TÍTULO
-# =========================
-def optimizar_titulo_inteligente(title: str, keywords: list):
-    base = limpiar_texto(title)
-    cat = detectar_categoria(base)
+# 🧠 Reglas marketplace
+def reglas(market):
+    m = str(market).lower()
+    if "amazon" in m:
+        return ["ergonómico", "oficina", "ajustable", "resistente"]
+    if "mercado" in m:
+        return ["nuevo", "garantía", "envío gratis"]
+    if "walmart" in m:
+        return ["calidad", "oferta", "hogar"]
+    return ["premium", "original"]
 
-    # agrega keywords faltantes
-    for kw in keywords:
-        if kw not in base.lower():
-            base += f" {kw}"
+# ✨ Optimizar título
+def optimizar_titulo(title, market):
+    cat = detectar_categoria(title)
+    kws = reglas(market)
 
-    # ajustes por categoría
-    if cat == "silla" and "ergonómica" not in base.lower():
-        base += " ergonómica cómoda oficina"
+    nuevo = title.strip()
+
+    for kw in kws:
+        if kw not in nuevo.lower():
+            nuevo += f" {kw}"
+
+    if cat == "silla":
+        nuevo += " ergonómica cómoda oficina"
     if cat == "escritorio":
-        base += " moderno funcional amplio"
-    if cat == "mesa":
-        base += " resistente hogar comedor"
-    if cat == "sofa":
-        base += " cómodo elegante sala"
-    if cat == "archivero":
-        base += " organizador resistente oficina"
+        nuevo += " moderno funcional"
 
-    # limpieza final + límite típico
-    base = limpiar_texto(base)
-    return base[:120]
+    return nuevo[:120]
 
-# =========================
-# 📝 DESCRIPCIÓN INTELIGENTE
-# =========================
-def generar_descripcion_inteligente(title: str):
+# ✨ Descripción inteligente
+def generar_desc(title):
     cat = detectar_categoria(title)
 
     if cat == "silla":
         return f"""🔹 {title}
 
-🪑 Silla ergonómica diseñada para máxima comodidad
-🛠️ Estructura resistente y duradera
+🪑 Diseño ergonómico para máxima comodidad
+🛠️ Material resistente y duradero
 📏 Ideal para oficina o home office
 
 ✔️ Ajuste de altura
-✔️ Soporte cómodo
-✔️ Diseño moderno
+✔️ Soporte lumbar
+✔️ Estilo moderno
 
-🚚 Envío rápido y seguro
-"""
+🚚 Envío rápido y seguro"""
+
     if cat == "escritorio":
         return f"""🔹 {title}
 
-🖥️ Escritorio funcional para trabajo o estudio
-🛠️ Material resistente de alta calidad
-📏 Superficie amplia y organizada
+🖥️ Espacio ideal para trabajar o estudiar
+🛠️ Estructura firme y resistente
+📏 Diseño moderno y funcional
 
 ✔️ Fácil armado
-✔️ Estabilidad superior
-✔️ Diseño moderno
+✔️ Excelente estabilidad
+✔️ Amplia superficie
 
-🚚 Envío seguro
-"""
-    if cat == "mesa":
-        return f"""🔹 {title}
+🚚 Entrega segura"""
 
-🍽️ Mesa ideal para comedor o uso diario
-🛠️ Material duradero
-📏 Tamaño práctico para tu espacio
-
-✔️ Fácil limpieza
-✔️ Estructura firme
-✔️ Estilo moderno
-
-🚚 Entrega segura
-"""
-    if cat == "sofa":
-        return f"""🔹 {title}
-
-🛋️ Sofá cómodo para sala
-🛠️ Estructura sólida y acolchado confortable
-✨ Diseño elegante
-
-✔️ Ideal para descanso
-✔️ Material resistente
-✔️ Estilo moderno
-
-🚚 Envío seguro
-"""
-    if cat == "archivero":
-        return f"""🔹 {title}
-
-🗂️ Archivero para organización de documentos
-🛠️ Estructura resistente
-📏 Compacto y funcional
-
-✔️ Cajones amplios
-✔️ Fácil uso
-✔️ Ideal para oficina
-
-🚚 Envío rápido
-"""
     return f"""🔹 {title}
 
-✔️ Producto de alta calidad
+✔️ Alta calidad
 ✔️ Diseño funcional
-✔️ Material resistente
+✔️ Uso versátil
 
-🚚 Envío rápido
-"""
+🚚 Envío rápido"""
 
-# =========================
-# 🖼️ SUGERENCIAS DE IMÁGENES
-# =========================
-def sugerir_imagenes(cantidad_actual: int):
-    faltantes = max(0, MIN_IMAGES - int(cantidad_actual))
-    ideas = [
-        "Foto principal fondo blanco",
-        "Foto en uso",
-        "Detalle / close-up",
-        "Empaque",
-        "Medidas / dimensiones",
-        "Lifestyle"
-    ]
-    return ideas[:faltantes]
-
-# =========================
-# 🚀 AUTO OPTIMIZACIÓN
-# =========================
-def auto_optimizar_row(row):
-    title = str(row.get("title", ""))
-    marketplace = str(row.get("marketplace", ""))
-
-    rules = reglas_marketplace(marketplace)
-    keywords = rules["keywords"]
-
-    nuevo_titulo = optimizar_titulo_inteligente(title, keywords)
-    nueva_desc = generar_descripcion_inteligente(nuevo_titulo)
-
-    return pd.Series({
-        "Título Optimizado": nuevo_titulo,
-        "Descripción Optimizada": nueva_desc
-    })
-
-# =========================
-# 📦 CARGA ARCHIVO (CACHE)
-# =========================
-@st.cache_data(show_spinner=False)
-def cargar_archivo(file):
-    if file.name.endswith(".csv"):
-        return pd.read_csv(file)
-    return pd.read_excel(file)
-
-# =========================
-# 🧪 VALIDACIÓN COLUMNAS
-# =========================
-def validar_columnas(df):
-    cols = [c.lower() for c in df.columns]
-    mapping = {}
-    for c in df.columns:
-        cl = c.lower()
-        if "title" in cl or "titulo" in cl:
-            mapping["title"] = c
-        if "desc" in cl:
-            mapping["description"] = c
-        if "image" in cl:
-            mapping["images"] = c
-        if "market" in cl:
-            mapping["marketplace"] = c
-
-    # fallback
-    for k in ["title", "description", "images", "marketplace"]:
-        if k not in mapping:
-            mapping[k] = k  # asume que ya existe
-
-    return mapping
-
-# =========================
-# 🧠 AUDITORÍA
-# =========================
-def auditar(df, mapping):
-    results = []
-
-    for _, row in df.iterrows():
-        title = str(row.get(mapping["title"], ""))
-        description = str(row.get(mapping["description"], "")).lower()
-        images_list = str(row.get(mapping["images"], "")).split(",")
-        marketplace = str(row.get(mapping["marketplace"], ""))
-
-        rules = reglas_marketplace(marketplace)
-        min_title = rules["min_title"]
-        keywords = rules["keywords"]
-
-        issues, recs, extras = [], [], []
-
-        # título
-        if len(title) < min_title:
-            issues.append("Título corto")
-            recs.append(f"Mínimo {min_title} caracteres")
-
-        missing_keywords = [k for k in keywords if k not in title.lower()]
-        if missing_keywords:
-            issues.append("Faltan keywords")
-            recs.append(f"Agregar: {', '.join(missing_keywords[:3])}")
-
-        # imágenes
-        if len(images_list) < MIN_IMAGES:
-            issues.append("Pocas imágenes")
-            extras.append(f"📸 Agregar: {', '.join(sugerir_imagenes(len(images_list)))}")
-
-        if images_list and "http" not in images_list[0]:
-            issues.append("Imagen principal inválida")
-
-        # descripción
-        if "sin descripcion" in description or len(description) < MIN_DESC_LENGTH:
-            issues.append("Descripción pobre")
-
-        # score
-        score = 100
-        if len(title) < min_title: score -= 25
-        if len(images_list) < MIN_IMAGES: score -= 20
-        if len(description) < MIN_DESC_LENGTH: score -= 25
-        if missing_keywords: score -= 20
-        score = max(score, 0)
-
-        if score < 50:
-            prioridad = "🔴 Urgente"
-        elif score < 80:
-            prioridad = "🟠 Mejorar"
-        else:
-            prioridad = "🟢 Bien"
-
-        results.append({
-            "Marketplace": marketplace,
-            "Producto": title,
-            "Score SEO": score,
-            "Prioridad": prioridad,
-            "Problemas": ", ".join(issues),
-            "Recomendaciones": " | ".join(recs),
-            "Sugerencias": "\n".join(extras)
-        })
-
-    return pd.DataFrame(results)
-
-# =========================
-# 📤 EXPORTAR EXCEL BONITO
-# =========================
+# 🎨 Exportar Excel bonito
 def exportar_excel(df):
-    output = io.BytesIO()
+    output = BytesIO()
     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
-        df.to_excel(writer, index=False, sheet_name="Auditoria")
-        wb  = writer.book
-        ws  = writer.sheets["Auditoria"]
+        df.to_excel(writer, index=False)
 
-        # formatos
-        red = wb.add_format({"bg_color": "#FFC7CE"})
-        yellow = wb.add_format({"bg_color": "#FFEB9C"})
-        green = wb.add_format({"bg_color": "#C6EFCE"})
+        workbook = writer.book
+        worksheet = writer.sheets["Sheet1"]
 
-        # aplica colores por prioridad
-        pr_col = list(df.columns).index("Prioridad")
-        for i, val in enumerate(df["Prioridad"], start=1):
-            fmt = green if "🟢" in val else yellow if "🟠" in val else red
-            ws.set_row(i, None, fmt)
+        format_red = workbook.add_format({"bg_color": "#FFC7CE"})
+        format_yellow = workbook.add_format({"bg_color": "#FFEB9C"})
+        format_green = workbook.add_format({"bg_color": "#C6EFCE"})
 
-        ws.set_column(0, len(df.columns)-1, 28)
+        worksheet.conditional_format("C2:C1000", {
+            "type": "cell",
+            "criteria": "<",
+            "value": 50,
+            "format": format_red
+        })
+        worksheet.conditional_format("C2:C1000", {
+            "type": "cell",
+            "criteria": "between",
+            "minimum": 50,
+            "maximum": 80,
+            "format": format_yellow
+        })
+        worksheet.conditional_format("C2:C1000", {
+            "type": "cell",
+            "criteria": ">",
+            "value": 80,
+            "format": format_green
+        })
 
     return output.getvalue()
 
-# =========================
-# 🧾 UI
-# =========================
-file = st.file_uploader("Sube tu archivo (.xlsx o .csv)", type=["xlsx", "csv"])
-
+# 🚀 PROCESO
 if file:
-    df = cargar_archivo(file)
-    df.fillna("", inplace=True)
+    if file.name.endswith(".csv"):
+        df = pd.read_csv(file)
+    else:
+        df = pd.read_excel(file)
 
-    mapping = validar_columnas(df)
+    df.fillna("", inplace=True)
 
     st.success("Archivo cargado ✅")
 
-    # auditoría
-    result_df = auditar(df, mapping)
+    resultados = []
 
-    # métricas
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Total", len(result_df))
-    c2.metric("🔴 Urgentes", len(result_df[result_df["Prioridad"]=="🔴 Urgente"]))
-    c3.metric("🟢 Bien", len(result_df[result_df["Prioridad"]=="🟢 Bien"]))
+    for _, row in df.iterrows():
+        title = str(row.get("title", ""))
+        desc = str(row.get("description", ""))
+        images = str(row.get("images", "")).split(",")
+        market = str(row.get("marketplace", ""))
 
-    # filtro
-    filtro = st.selectbox("Filtrar por prioridad", ["Todos", "🔴 Urgente", "🟠 Mejorar", "🟢 Bien"])
-    view_df = result_df if filtro == "Todos" else result_df[result_df["Prioridad"] == filtro]
+        score = 100
 
+        if len(title) < 50:
+            score -= 25
+        if len(images) < MIN_IMAGES:
+            score -= 20
+        if len(desc) < 120:
+            score -= 25
+
+        prioridad = "🟢 Bien"
+        if score < 80:
+            prioridad = "🟠 Mejorar"
+        if score < 50:
+            prioridad = "🔴 Urgente"
+
+        resultados.append({
+            "Producto": title,
+            "Score SEO": score,
+            "Prioridad": prioridad
+        })
+
+    view_df = pd.DataFrame(resultados)
     st.dataframe(view_df, use_container_width=True)
 
-    # descargas
-    col_dl1, col_dl2 = st.columns(2)
-    with col_dl1:
-        st.download_button("📥 Descargar CSV", view_df.to_csv(index=False), "auditoria.csv", "text/csv")
-    with col_dl2:
-        st.download_button("📥 Descargar Excel (colores)", exportar_excel(view_df), "auditoria.xlsx")
-
-    st.divider()
-
-    # 🚀 AUTO-OPTIMIZAR
+    # 🚀 BOTÓN PRO
     if st.button("🚀 Arreglar TODO (IA GRATIS)"):
-        optimizados = df.apply(auto_optimizar_row, axis=1)
-        df_final = pd.concat([df, optimizados], axis=1)
+        nuevos = []
 
-        st.success("Optimización completa 🔥")
-        st.dataframe(df_final, use_container_width=True)
+        for _, row in df.iterrows():
+            title = str(row.get("title", ""))
+            market = str(row.get("marketplace", ""))
 
-        col2_dl1, col2_dl2 = st.columns(2)
-        with col2_dl1:
-            st.download_button("📥 CSV optimizados", df_final.to_csv(index=False), "listings_optimizados.csv", "text/csv")
-        with col2_dl2:
-            st.download_button("📥 Excel optimizados", exportar_excel(df_final), "listings_optimizados.xlsx")
+            nuevo_titulo = optimizar_titulo(title, market)
+            nueva_desc = generar_desc(nuevo_titulo)
+
+            nuevos.append({
+                "Título Nuevo": nuevo_titulo,
+                "Descripción Nueva": nueva_desc
+            })
+
+        nuevos_df = pd.DataFrame(nuevos)
+        final_df = pd.concat([df, nuevos_df], axis=1)
+
+        st.success("🔥 Optimización completa")
+
+        st.dataframe(final_df, use_container_width=True)
+
+        st.download_button(
+            "📥 Descargar Excel PRO",
+            exportar_excel(final_df),
+            "auditoria_pro.xlsx"
+        )
