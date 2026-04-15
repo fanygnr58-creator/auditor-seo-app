@@ -1,14 +1,15 @@
 import pandas as pd
 import streamlit as st
 from io import BytesIO
+import random
 
 st.set_page_config(page_title="Auditor SEO PRO Muebles", layout="wide")
-st.title("🚀 Auditor SEO PRO Muebles (Nivel Empresa)")
+st.title("🚀 Auditor SEO PRO Muebles (Nivel Humano Real)")
 
 file = st.file_uploader("Sube tu archivo", type=["xlsx", "csv"])
 MIN_IMAGES = 4
 
-# 🧠 CATEGORIZACIÓN COMPLETA MUEBLES
+# 🧠 CATEGORÍAS
 def detectar_categoria(title):
     t = title.lower()
 
@@ -24,130 +25,131 @@ def detectar_categoria(title):
         return "sofa"
     elif "sillon" in t or "sillón" in t:
         return "sillon"
-    elif "banco" in t or "banca" in t:
-        return "banca"
-    elif "archivero" in t:
-        return "archivero"
-    elif "librero" in t or "estante" in t:
-        return "librero"
-    elif "closet" in t or "ropero" in t:
-        return "closet"
-    elif "cama" in t:
-        return "cama"
-    elif "buró" in t or "buro" in t:
-        return "buro"
-    elif "tocador" in t:
-        return "tocador"
-    
     return "general"
 
-# 🧠 DETECTAR MATERIALES
+# 🧠 MATERIALES
 def detectar_materiales(title):
     t = title.lower()
     mats = []
 
     if "madera" in t or "melamina" in t:
-        mats.append("estructura en madera/melamina")
-    if "metal" in t or "acero" in t:
-        mats.append("estructura metálica resistente")
-    if "plastico" in t or "plástico" in t:
-        mats.append("material plástico duradero")
+        mats.append("estructura en madera resistente")
+    if "metal" in t:
+        mats.append("base metálica de alta durabilidad")
     if "tela" in t:
-        mats.append("tapizado en tela")
+        mats.append("tapizado en tela cómoda")
     if "piel" in t or "vinil" in t:
-        mats.append("acabado tipo piel")
+        mats.append("acabado tipo piel elegante")
 
     return mats
 
-# 🧠 BULLETS DINÁMICOS
-def generar_bullets(cat, materiales):
+# 🧠 ATRIBUTOS DINÁMICOS
+def detectar_atributos(title):
+    t = title.lower()
+    atributos = []
+
+    if "4" in t:
+        atributos.append("incluye 4 piezas")
+    if "6" in t:
+        atributos.append("incluye 6 piezas")
+
+    if "rectangular" in t:
+        atributos.append("mesa rectangular")
+    if "circular" in t:
+        atributos.append("mesa circular")
+
+    if "negro" in t:
+        atributos.append("acabado en color negro")
+    if "blanco" in t:
+        atributos.append("acabado en color blanco")
+
+    if "oslo" in t:
+        atributos.append("diseño moderno estilo Oslo")
+
+    return atributos
+
+# 🧠 BULLETS
+def generar_bullets(cat, materiales, atributos):
     base = []
 
-    if cat == "silla":
-        base = ["Diseño ergonómico", "Comodidad prolongada", "Ideal para oficina"]
-    elif cat == "comedor":
-        base = ["Ideal para reuniones", "Diseño moderno", "Ahorro de espacio"]
-    elif cat == "sofa":
-        base = ["Máximo confort", "Diseño elegante", "Ideal para sala"]
-    elif cat == "escritorio":
-        base = ["Espacio funcional", "Ideal para trabajo", "Diseño moderno"]
+    if cat == "comedor":
+        base = [
+            "Ideal para reuniones familiares",
+            "Diseño moderno y funcional",
+            "Optimiza tu espacio"
+        ]
+    elif cat == "silla":
+        base = [
+            "Comodidad durante largas jornadas",
+            "Diseño ergonómico",
+            "Versátil para hogar u oficina"
+        ]
     else:
-        base = ["Alta calidad", "Diseño funcional", "Uso versátil"]
+        base = [
+            "Alta calidad",
+            "Diseño funcional",
+            "Uso versátil"
+        ]
 
-    return base + materiales
+    return base + materiales + atributos
 
-# 🧠 SEO POR MARKETPLACE
+# 🧠 VARIACIÓN HUMANA
+introducciones = [
+    "Transforma tu espacio con este increíble",
+    "Dale un toque moderno a tu hogar con este",
+    "Renueva tu ambiente con este funcional",
+    "Haz de tu espacio un lugar más cómodo con este"
+]
+
+cierres = [
+    "Perfecto para complementar tu hogar con estilo y funcionalidad.",
+    "Una excelente opción para quienes buscan diseño y practicidad.",
+    "Ideal para crear espacios cómodos y bien aprovechados.",
+    "Diseñado para adaptarse a diferentes necesidades del día a día."
+]
+
+# 🧠 TÍTULO SEO
 def optimizar_titulo(title, market, cat):
     m = market.lower()
 
     if "amazon" in m:
         return f"{title} {cat} moderno resistente hogar oficina"[:120]
-
     if "mercado" in m:
         return f"{title} nuevo envío gratis garantía"[:120]
-
     if "walmart" in m:
         return f"{title} mueble hogar calidad precio"[:120]
 
-    if "liverpool" in m:
-        return f"{title} diseño premium hogar moderno"[:120]
-
-    if "coppel" in m:
-        return f"{title} práctico económico hogar"[:120]
-
-    if "elektra" in m:
-        return f"{title} oferta especial mueble hogar"[:120]
-
-    if "shopify" in m:
-        return f"{title} tienda oficial diseño exclusivo"[:120]
-
     return title[:120]
 
-# 🧠 DESCRIPCIONES PRO
-def generar_desc(title, market, cat, materiales, bullets):
-    m = market.lower()
+# 🧠 DESCRIPCIÓN HUMANA PRO
+def generar_desc(title, market, cat, materiales):
+    atributos = detectar_atributos(title)
+    bullets = generar_bullets(cat, materiales, atributos)
+
+    intro_random = random.choice(introducciones)
+    cierre_random = random.choice(cierres)
 
     bullets_txt = "\n".join([f"✔️ {b}" for b in bullets])
 
-    if "amazon" in m:
-        return f"""🔹 {title}
+    intro = f"{intro_random} {cat} {', '.join(atributos[:2])}." if atributos else f"{intro_random} {cat} ideal para tu espacio."
 
-Producto diseñado para ofrecer funcionalidad y estilo en cualquier espacio.
-
-{bullets_txt}
-
-Perfecto para hogar u oficina."""
-
-    if "mercado" in m:
-        return f"""🔹 {title}
-
-Producto nuevo listo para envío inmediato 🚀
-
-{bullets_txt}
-
-📦 Envío rápido\n🔒 Garantía incluida"""
-
-    if "walmart" in m:
-        return f"""🔹 {title}
-
-Renueva tu espacio con este mueble funcional.
-
-{bullets_txt}
-
-Gran opción para tu hogar."""
-
-    if "liverpool" in m:
-        return f"""🔹 {title}
-
-Diseño elegante que complementa cualquier ambiente.
-
-{bullets_txt}
-
-Ideal para espacios modernos."""
+    parrafo_extra = ""
+    if cat == "comedor":
+        parrafo_extra = "Este set de comedor está pensado para brindar comodidad y estilo en reuniones familiares o momentos cotidianos, adaptándose fácilmente a diferentes espacios del hogar."
+    elif cat == "silla":
+        parrafo_extra = "Su diseño está enfocado en brindar confort durante el uso continuo, manteniendo una estética moderna y funcional."
+    else:
+        parrafo_extra = "Diseñado para ofrecer funcionalidad sin sacrificar el estilo, adaptándose a distintos entornos."
 
     return f"""🔹 {title}
 
-{bullets_txt}"""
+{intro}
+
+{parrafo_extra}
+
+{bullets_txt}
+
+{cierre_random}"""
 
 # 🎨 EXPORTAR
 def exportar_excel(df):
@@ -171,7 +173,6 @@ if file:
         title = str(row.get("title", ""))
         desc = str(row.get("description", ""))
         images = str(row.get("images", "")).split(",")
-        market = str(row.get("marketplace", ""))
 
         score = 100
 
@@ -205,10 +206,9 @@ if file:
 
             cat = detectar_categoria(title)
             materiales = detectar_materiales(title)
-            bullets = generar_bullets(cat, materiales)
 
             nuevo_titulo = optimizar_titulo(title, market, cat)
-            nueva_desc = generar_desc(nuevo_titulo, market, cat, materiales, bullets)
+            nueva_desc = generar_desc(nuevo_titulo, market, cat, materiales)
 
             nuevos.append({
                 "Título Nuevo": nuevo_titulo,
